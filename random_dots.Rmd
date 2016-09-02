@@ -74,6 +74,7 @@ m <- 5
 n <- 4
 ```
 
+\newpage
 
 ## Plot of random dots
 
@@ -82,6 +83,7 @@ xy <- random_dots(total_dots, m,  n)
 plot_dots(xy, m, n)
 ```
 
+\newpage
 
 ## Plot of not-so-random dots
 
