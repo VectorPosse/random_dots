@@ -1,0 +1,91 @@
+---
+title: "Random dots"
+author: "Sean Raleigh"
+output: html_document
+---
+
+## Introduction
+
+We are not good at judging randomness. This document will compare two figures containing a selection of dots scattered on a grid. One of the grids will have a truly random scattering of dots. The other has a pattern of dots, but nevertheless, will look more random to the average observer.
+
+
+## Preliminaries
+
+```{r, message = F, warning = F}
+library(ggplot2)
+set.seed(1234)
+```
+
+
+## Functions
+
+The `total_dots` argument is the total number of dots to plot in an `m` by `n` grid. The `random_dots` function will create exactly this many dots randomly distributed over the region, whereas `not_so_random_dots` will create `total_dots/(m * n)` dots in each of the `m * n` squares. (This number is rounded if `total_dots/(m * n)` is not a whole number.)^[Rounded in R's weird "go to the even digit" way, though!]
+
+```{r}
+random_dots <- function(total_dots, m, n){
+    x <- runif(total_dots)
+    y <- runif(total_dots)
+    xy <- data.frame(x, y)
+    return(xy)
+}
+
+not_so_random_dots <- function(total_dots, m, n){
+    # Fill each square randomly
+    each_square <- function(x_shift,  y_shift) {
+        x <- x_shift + (1/m) * runif(round(total_dots/(m * n)))
+        y <- y_shift + (1/n) * runif(round(total_dots/(m * n)))
+        return(data.frame(x, y))
+        }
+    # Initialize empty data frame
+    xy <- data.frame()
+    # Glue all the squares together
+    for(i in seq(0, (1 - 1/m), by = 1/m)){
+        for(j in seq(0, (1 - 1/n), by = 1/n)){
+            new_points <- each_square(x_shift = i, y_shift = j)
+            xy <- rbind(xy, new_points)
+        }
+    }
+    return(xy)
+}
+
+plot_dots <- function(xy, m, n) {
+    ggplot(xy, aes(x = x, y = y)) +
+        geom_point(size = rel(2)) +
+        theme_minimal() +
+        theme(panel.grid.major = element_line(size = rel(2))) +
+        coord_fixed(ratio = n/m) +
+        scale_x_continuous(name = NULL, labels = NULL,
+                           breaks = seq(0, 1, by = 1/m),
+                           minor_breaks = NULL,
+                           limits = c(0, 1), expand = c(0, 0)) +
+        scale_y_continuous(name = NULL, label = NULL,
+                           breaks = seq(0, 1, by = 1/n),
+                           minor_breaks = NULL,
+                           limits = c(0, 1), expand = c(0, 0))
+}
+```
+
+
+## Set parameters
+
+```{r}
+total_dots <- 40
+m <- 5
+n <- 4
+```
+
+
+## Plot of random dots
+
+```{r}
+xy <- random_dots(total_dots, m,  n)
+plot_dots(xy, m, n)
+```
+
+
+## Plot of not-so-random dots
+
+```{r}
+xy <- not_so_random_dots(total_dots, m,  n)
+plot_dots(xy, m, n)
+```
